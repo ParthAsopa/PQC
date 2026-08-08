@@ -119,17 +119,11 @@
 
         <!-- Detailed Breakdown -->
         <div class="space-y-4">
-            <!-- Data Usage Section -->
+
+            <!-- Live Algorithm Findings — fully dynamic -->
             <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                <h4 class="font-semibold text-slate-200 mb-2">📊 Data Collection & Telemetry Breakdown</h4>
-                <ul class="text-sm text-slate-400 space-y-1">
-                    <li>• <strong>User Identifiers:</strong> IP Address, Device Fingerprint (Continuous Active Capture)
-                    </li>
-                    <li>• <strong>Cookies & Trackers:</strong> Google Analytics, Facebook Pixel, Third-party Beacons
-                    </li>
-                    <li>• <strong>Session Telemetry:</strong> Mouse Movement, DOM Element Interaction, Unencrypted Form
-                        Auto-capture</li>
-                </ul>
+                <h4 class="font-semibold text-slate-200 mb-3">🔬 Cryptographic Algorithm Findings</h4>
+                <ul id="findings-list" class="text-sm space-y-3"></ul>
             </div>
 
             <!-- Encryption & Harvesting Check -->
@@ -137,17 +131,21 @@
                 <h4 class="font-semibold text-slate-200 mb-2">🔒 Encrypted Data & Quantum Harvesting Risk Assessment
                 </h4>
                 <div class="text-sm text-slate-300 space-y-2">
-                    <p class="text-emerald-400">✔ <strong>In-Transit Encryption:</strong> HTTPS Active (Classical
-                        RSA-2048 Key Exchange)</p>
-                    <p class="text-rose-400">⚠️ <strong>Encrypted Data Exposure:</strong> Encrypted payload logs are
-                        stored on unverified third-party cloud servers.</p>
-                    <p class="text-amber-300 bg-amber-950/40 border border-amber-800/50 p-3 rounded mt-2">
-                        <strong>Quantum Threat Analysis:</strong> The endpoint uses classical asymmetric cryptography
-                        (RSA-2048). Intercepted data is highly vulnerable to future decryption by Cryptographically
-                        Relevant Quantum Computers (CRQCs) using Shor's Algorithm. Immediate transition to <strong>NIST
-                            Post-Quantum Standards (ML-KEM / Kyber)</strong> is strongly recommended.
-                    </p>
+                    <p id="intransit-line" class="text-emerald-400"></p>
+                    <p class="text-rose-400">⚠️ <strong>Encrypted Data Exposure:</strong> Classical asymmetric keys
+                        are vulnerable to future decryption by Cryptographically Relevant Quantum Computers (CRQCs).</p>
+                    <p id="threat-box" class="text-amber-300 bg-amber-950/40 border border-amber-800/50 p-3 rounded mt-2"></p>
                 </div>
+            </div>
+
+            <!-- Illustrative Telemetry Note -->
+            <div class="bg-slate-950 p-4 rounded-lg border border-slate-700 opacity-60">
+                <h4 class="font-semibold text-slate-400 mb-2">📊 Common Telemetry Risks (Illustrative — Full Tracker Scan: Pro Feature)</h4>
+                <ul class="text-sm text-slate-500 space-y-1">
+                    <li>• <strong>User Identifiers:</strong> IP Address, Device Fingerprint (Continuous Active Capture)</li>
+                    <li>• <strong>Cookies & Trackers:</strong> Google Analytics, Facebook Pixel, Third-party Beacons</li>
+                    <li>• <strong>Session Telemetry:</strong> Mouse Movement, DOM Element Interaction, Form Auto-capture</li>
+                </ul>
             </div>
         </div>
 
@@ -160,10 +158,15 @@
     <!-- JavaScript Logic -->
     <script>
         async function startAudit() {
-            const url = document.getElementById('urlInput').value;
+            // FIX 1: auto-prepend https:// if missing
+            let url = document.getElementById('urlInput').value.trim();
             if (!url) {
                 alert("Please enter a valid website URL!");
                 return;
+            }
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+                document.getElementById('urlInput').value = url;
             }
 
             // Show loading, hide input
@@ -175,9 +178,21 @@
             setTimeout(() => { statusText.innerText = "Extracting SSL & Encryption certificates..."; }, 1000);
             setTimeout(() => { statusText.innerText = "Evaluating Post-Quantum vulnerability matrix..."; }, 2500);
 
+            // FIX 2: 15-second timeout via AbortController
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
             try {
-                const response = await fetch(`http://localhost:8000/scan?url=${encodeURIComponent(url)}`);
+                const response = await fetch(`http://localhost:8000/scan?url=${encodeURIComponent(url)}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
                 const data = await response.json();
+
+                // FIX 3: guard against error response (no findings)
+                if (data.error || data.status === 'error' || !data.findings) {
+                    throw new Error(data.error || data.message || "Backend returned no scan data.");
+                }
 
                 // Populate report fields
                 document.getElementById('report-url').innerText = url;
@@ -193,27 +208,54 @@
                 else if (data.risk_level === "HIGH") pqcEl.className = "text-lg font-bold text-amber-400 mt-1";
                 else pqcEl.className = "text-lg font-bold text-emerald-400 mt-1";
 
-                // Cert expiry in tracker badge (repurpose it)
+                // Cert expiry
                 document.getElementById('tracker-count').innerText = `Cert expires: ${data.not_after}`;
 
-                // Quantum threat paragraph — some fields only exist at CRITICAL/HIGH
+                // FIX 4: dynamic in-transit line using real data
+                document.getElementById('intransit-line').innerHTML =
+                    `✔ <strong>In-Transit Encryption:</strong> ${data.tls_version} Active — ${pubKeyAlgo} Key Exchange`;
+
+                // FIX 5: dynamic findings table — shows all 3 findings per URL
+                const riskColor = { CRITICAL: 'text-rose-400', HIGH: 'text-amber-400', MEDIUM: 'text-yellow-300', SAFE: 'text-emerald-400', UNKNOWN: 'text-slate-400' };
+                const riskBadgeBg = { CRITICAL: 'bg-rose-950/50 border-rose-800/50', HIGH: 'bg-amber-950/50 border-amber-800/50', MEDIUM: 'bg-yellow-950/50 border-yellow-800/50', SAFE: 'bg-emerald-950/50 border-emerald-800/50', UNKNOWN: 'bg-slate-800/50 border-slate-700' };
+                let findingsHTML = '';
+                data.findings.forEach(f => {
+                    const col = riskColor[f.risk] || 'text-slate-400';
+                    const bg  = riskBadgeBg[f.risk] || 'bg-slate-800/50 border-slate-700';
+                    findingsHTML += `
+                        <li class="p-3 rounded-lg border ${bg}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-semibold text-slate-200">${f.field}</span>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded ${col} border ${bg}">${f.risk}</span>
+                            </div>
+                            <div class="font-mono text-xs text-slate-300 mb-1">${f.algo}</div>
+                            <div class="text-slate-400 text-xs">${f.reason}</div>
+                        </li>`;
+                });
+                document.getElementById('findings-list').innerHTML = findingsHTML;
+
+                // Quantum threat remediation box
                 const r = data.remediation;
                 let threatHTML = `<strong>Quantum Threat Analysis:</strong> ${r.harvest_risk || 'N/A'}`;
-                if (r.interim)      threatHTML += `<br><br><strong>Interim Fix:</strong> ${r.interim}`;
-                if (r.kem_upgrade)  threatHTML += `<br><br><strong>KEM Upgrade:</strong> ${r.kem_upgrade}`;
-                if (r.sig_upgrade)  threatHTML += `<br><br><strong>Signature Upgrade:</strong> ${r.sig_upgrade}`;
-                if (r.sym_upgrade)  threatHTML += `<br><br><strong>Symmetric Upgrade:</strong> ${r.sym_upgrade}`;
-                if (r.action)       threatHTML += `<br><br><strong>Action:</strong> ${r.action}`;
-                document.querySelector('.text-amber-300').innerHTML = threatHTML;
+                if (r.interim)     threatHTML += `<br><br><strong>Interim Fix:</strong> ${r.interim}`;
+                if (r.kem_upgrade) threatHTML += `<br><br><strong>KEM Upgrade:</strong> ${r.kem_upgrade}`;
+                if (r.sig_upgrade) threatHTML += `<br><br><strong>Signature Upgrade:</strong> ${r.sig_upgrade}`;
+                if (r.sym_upgrade) threatHTML += `<br><br><strong>Symmetric Upgrade:</strong> ${r.sym_upgrade}`;
+                if (r.action)      threatHTML += `<br><br><strong>Action:</strong> ${r.action}`;
+                document.getElementById('threat-box').innerHTML = threatHTML;
 
                 // Show report
                 document.getElementById('loading-block').classList.add('hidden');
                 document.getElementById('report-block').classList.remove('hidden');
 
             } catch (err) {
+                clearTimeout(timeoutId);
                 document.getElementById('loading-block').classList.add('hidden');
                 document.getElementById('input-block').classList.remove('hidden');
-                alert("Scan failed. Make sure the backend is running.\n\nError: " + err.message);
+                const msg = err.name === 'AbortError'
+                    ? "Scan timed out after 15 seconds. The site may be unreachable."
+                    : "Scan failed. Make sure the backend is running.\n\nError: " + err.message;
+                alert(msg);
             }
         }
         function resetApp() {
