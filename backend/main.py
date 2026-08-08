@@ -2,6 +2,7 @@
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from urllib.parse import urlparse
+import quantum_scanner
 
 app = FastAPI(
     title="URL Scanner API",
@@ -38,16 +39,7 @@ def scan(url: str = Query(..., description="URL to scan")):
                 detail="Invalid URL. Please provide a valid http/https URL."
             )
 
-        # -----------------------------------------
-        # YOUR SCANNING LOGIC GOES HERE
-        # -----------------------------------------
-
-        result = {
-            "url": url,
-            "status": "scanned",
-            "message": "URL scan completed successfully"
-        }
-
+        result = quantum_scanner.scan(url)
         return result
 
     except HTTPException:

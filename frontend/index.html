@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,9 +16,19 @@
             height: 50px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center p-6 font-sans">
 
     <!-- Header -->
@@ -35,12 +46,17 @@
             <div>
                 <h2 class="text-xl font-bold text-amber-400 mb-2">Your Data is Encrypted, But Is It Truly Secure?</h2>
                 <p class="text-slate-300 text-sm leading-relaxed mb-3">
-                    Most modern websites claim user data is fully encrypted. However, adversaries are actively harvesting encrypted data in the background today to decrypt it once Quantum Computing becomes viable—known as the <strong>"Harvest-Now-Decrypt-Later" (HNDL)</strong> threat.
+                    Most modern websites claim user data is fully encrypted. However, adversaries are actively
+                    harvesting encrypted data in the background today to decrypt it once Quantum Computing becomes
+                    viable—known as the <strong>"Harvest-Now-Decrypt-Later" (HNDL)</strong> threat.
                 </p>
                 <div class="flex flex-wrap gap-2 text-xs text-slate-400">
-                    <span class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">🔒 SSL/TLS Certificate Audit</span>
-                    <span class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">📡 Active Tracker Inspection</span>
-                    <span class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">⚛️ Post-Quantum Exposure Evaluation</span>
+                    <span class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">🔒 SSL/TLS Certificate
+                        Audit</span>
+                    <span class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">📡 Active Tracker
+                        Inspection</span>
+                    <span class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">⚛️ Post-Quantum Exposure
+                        Evaluation</span>
                 </div>
             </div>
         </div>
@@ -50,31 +66,37 @@
     <div id="input-block" class="max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl mb-8">
         <h3 class="text-lg font-semibold text-slate-200 mb-3">Enter Target Website URL to Audit:</h3>
         <div class="flex gap-4">
-            <input type="url" id="urlInput" placeholder="https://example-healthcare-portal.com" 
-                   class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-blue-500 transition">
-            <button onclick="startAudit()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg transition flex items-center gap-2">
-                 Audit Privacy
+            <input type="url" id="urlInput" placeholder="https://example-healthcare-portal.com"
+                class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-blue-500 transition">
+            <button onclick="startAudit()"
+                class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg transition flex items-center gap-2">
+                Audit Privacy
             </button>
         </div>
     </div>
 
     <!-- BLOCK 3: PROCESSING STATE (Hidden by default) -->
-    <div id="loading-block" class="hidden max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-12 text-center shadow-xl mb-8">
+    <div id="loading-block"
+        class="hidden max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-12 text-center shadow-xl mb-8">
         <div class="flex flex-col items-center justify-center">
             <div class="loader mb-4"></div>
             <h3 class="text-xl font-bold text-blue-400 mb-2">Analyzing Target URL Security...</h3>
-            <p id="loading-status" class="text-slate-400 text-sm animate-pulse">Establishing secure handshake inspection...</p>
+            <p id="loading-status" class="text-slate-400 text-sm animate-pulse">Establishing secure handshake
+                inspection...</p>
         </div>
     </div>
 
     <!-- BLOCK 4: FINAL AUDIT REPORT (Hidden by default) -->
-    <div id="report-block" class="hidden max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-xl">
+    <div id="report-block"
+        class="hidden max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
             <div>
-                <span class="text-xs text-blue-400 font-bold tracking-wider uppercase">Executive Security Audit Report</span>
+                <span class="text-xs text-blue-400 font-bold tracking-wider uppercase">Executive Security Audit
+                    Report</span>
                 <h2 id="report-url" class="text-2xl font-bold text-white mt-1">https://example.com</h2>
             </div>
-            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm text-slate-300">
+            <button onclick="window.print()"
+                class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm text-slate-300">
                 🖨️ Export / Print Report
             </button>
         </div>
@@ -101,58 +123,99 @@
             <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
                 <h4 class="font-semibold text-slate-200 mb-2">📊 Data Collection & Telemetry Breakdown</h4>
                 <ul class="text-sm text-slate-400 space-y-1">
-                    <li>• <strong>User Identifiers:</strong> IP Address, Device Fingerprint (Continuous Active Capture)</li>
-                    <li>• <strong>Cookies & Trackers:</strong> Google Analytics, Facebook Pixel, Third-party Beacons</li>
-                    <li>• <strong>Session Telemetry:</strong> Mouse Movement, DOM Element Interaction, Unencrypted Form Auto-capture</li>
+                    <li>• <strong>User Identifiers:</strong> IP Address, Device Fingerprint (Continuous Active Capture)
+                    </li>
+                    <li>• <strong>Cookies & Trackers:</strong> Google Analytics, Facebook Pixel, Third-party Beacons
+                    </li>
+                    <li>• <strong>Session Telemetry:</strong> Mouse Movement, DOM Element Interaction, Unencrypted Form
+                        Auto-capture</li>
                 </ul>
             </div>
 
             <!-- Encryption & Harvesting Check -->
             <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                <h4 class="font-semibold text-slate-200 mb-2">🔒 Encrypted Data & Quantum Harvesting Risk Assessment</h4>
+                <h4 class="font-semibold text-slate-200 mb-2">🔒 Encrypted Data & Quantum Harvesting Risk Assessment
+                </h4>
                 <div class="text-sm text-slate-300 space-y-2">
-                    <p class="text-emerald-400">✔ <strong>In-Transit Encryption:</strong> HTTPS Active (Classical RSA-2048 Key Exchange)</p>
-                    <p class="text-rose-400">⚠️ <strong>Encrypted Data Exposure:</strong> Encrypted payload logs are stored on unverified third-party cloud servers.</p>
+                    <p class="text-emerald-400">✔ <strong>In-Transit Encryption:</strong> HTTPS Active (Classical
+                        RSA-2048 Key Exchange)</p>
+                    <p class="text-rose-400">⚠️ <strong>Encrypted Data Exposure:</strong> Encrypted payload logs are
+                        stored on unverified third-party cloud servers.</p>
                     <p class="text-amber-300 bg-amber-950/40 border border-amber-800/50 p-3 rounded mt-2">
-                        <strong>Quantum Threat Analysis:</strong> The endpoint uses classical asymmetric cryptography (RSA-2048). Intercepted data is highly vulnerable to future decryption by Cryptographically Relevant Quantum Computers (CRQCs) using Shor's Algorithm. Immediate transition to <strong>NIST Post-Quantum Standards (ML-KEM / Kyber)</strong> is strongly recommended.
+                        <strong>Quantum Threat Analysis:</strong> The endpoint uses classical asymmetric cryptography
+                        (RSA-2048). Intercepted data is highly vulnerable to future decryption by Cryptographically
+                        Relevant Quantum Computers (CRQCs) using Shor's Algorithm. Immediate transition to <strong>NIST
+                            Post-Quantum Standards (ML-KEM / Kyber)</strong> is strongly recommended.
                     </p>
                 </div>
             </div>
         </div>
 
-        <button onclick="resetApp()" class="mt-6 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 rounded-lg border border-slate-700">
+        <button onclick="resetApp()"
+            class="mt-6 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 rounded-lg border border-slate-700">
             🔄 Audit Another URL
         </button>
     </div>
 
     <!-- JavaScript Logic -->
     <script>
-        function startAudit() {
+        async function startAudit() {
             const url = document.getElementById('urlInput').value;
-            if(!url) {
+            if (!url) {
                 alert("Please enter a valid website URL!");
                 return;
             }
 
-            // Hide Input, Show Loading
+            // Show loading, hide input
             document.getElementById('input-block').classList.add('hidden');
             document.getElementById('loading-block').classList.remove('hidden');
 
             const statusText = document.getElementById('loading-status');
-            
-            // Progress Steps
+            statusText.innerText = "Establishing secure handshake inspection...";
             setTimeout(() => { statusText.innerText = "Extracting SSL & Encryption certificates..."; }, 1000);
-            setTimeout(() => { statusText.innerText = "Analyzing active network trackers & cookies..."; }, 2000);
-            setTimeout(() => { statusText.innerText = "Evaluating Post-Quantum (PQC) vulnerability matrix..."; }, 3000);
+            setTimeout(() => { statusText.innerText = "Evaluating Post-Quantum vulnerability matrix..."; }, 2500);
 
-            // Show Final Report
-            setTimeout(() => {
+            try {
+                const response = await fetch(`http://localhost:8000/scan?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                // Populate report fields
+                document.getElementById('report-url').innerText = url;
+
+                // Encryption standard — TLS version + first finding algo
+                const pubKeyAlgo = data.findings[0]?.algo || "Unknown";
+                document.getElementById('enc-status').innerText = `${data.tls_version} / ${pubKeyAlgo}`;
+
+                // PQC Risk
+                const pqcEl = document.getElementById('pqc-risk');
+                pqcEl.innerText = `${data.risk_level} (Score: ${data.risk_score}/100)`;
+                if (data.risk_level === "CRITICAL") pqcEl.className = "text-lg font-bold text-rose-500 mt-1";
+                else if (data.risk_level === "HIGH") pqcEl.className = "text-lg font-bold text-amber-400 mt-1";
+                else pqcEl.className = "text-lg font-bold text-emerald-400 mt-1";
+
+                // Cert expiry in tracker badge (repurpose it)
+                document.getElementById('tracker-count').innerText = `Cert expires: ${data.not_after}`;
+
+                // Quantum threat paragraph — some fields only exist at CRITICAL/HIGH
+                const r = data.remediation;
+                let threatHTML = `<strong>Quantum Threat Analysis:</strong> ${r.harvest_risk || 'N/A'}`;
+                if (r.interim)      threatHTML += `<br><br><strong>Interim Fix:</strong> ${r.interim}`;
+                if (r.kem_upgrade)  threatHTML += `<br><br><strong>KEM Upgrade:</strong> ${r.kem_upgrade}`;
+                if (r.sig_upgrade)  threatHTML += `<br><br><strong>Signature Upgrade:</strong> ${r.sig_upgrade}`;
+                if (r.sym_upgrade)  threatHTML += `<br><br><strong>Symmetric Upgrade:</strong> ${r.sym_upgrade}`;
+                if (r.action)       threatHTML += `<br><br><strong>Action:</strong> ${r.action}`;
+                document.querySelector('.text-amber-300').innerHTML = threatHTML;
+
+                // Show report
                 document.getElementById('loading-block').classList.add('hidden');
                 document.getElementById('report-block').classList.remove('hidden');
-                document.getElementById('report-url').innerText = url;
-            }, 4000);
-        }
 
+            } catch (err) {
+                document.getElementById('loading-block').classList.add('hidden');
+                document.getElementById('input-block').classList.remove('hidden');
+                alert("Scan failed. Make sure the backend is running.\n\nError: " + err.message);
+            }
+        }
         function resetApp() {
             document.getElementById('report-block').classList.add('hidden');
             document.getElementById('input-block').classList.remove('hidden');
@@ -160,4 +223,5 @@
         }
     </script>
 </body>
+
 </html>
