@@ -1,1 +1,98 @@
-*/.env
+# ==========================================
+# 1. Operating System Files
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.lnk
+*.cab
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==========================================
+# 2. Text Editors and IDEs
+# ==========================================
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ / JetBrains
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.metadata
+.classpath
+.project
+.settings/
+
+# Sublime Text / Vim
+*.sublime-project
+*.sublime-workspace
+.*.swp
+.*.swo
+.netrwhist
+
+# ==========================================
+# 3. Package Managers & Dependencies
+# ==========================================
+node_modules/
+jspm_packages/
+web_modules/
+bower_components/
+.npm/
+pnpm-lock.yaml
+bun.lockb
+vendor/
+.venv/
+venv/
+env/
+ENV/
+
+# ==========================================
+# 4. Build Tools, Caches, & Outputs
+# ==========================================
+dist/
+build/
+out/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+*.log
+*.tmp
+*.bak
+.cache/
+.sass-cache/
+.eslintcache
+.parcel-cache/
+
+# ==========================================
+# 5. Environments, Secrets, & Credentials
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.cert
+*.secret
