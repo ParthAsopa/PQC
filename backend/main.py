@@ -1,3 +1,4 @@
+from quantum_scanner import scan as quantum_scan
 from fastapi import FastAPI, Query, HTTPException
 from urllib.parse import urlparse
 
@@ -30,13 +31,7 @@ def scan(url: str = Query(..., description="URL to scan")):
         # -----------------------------------------
         # YOUR SCANNING LOGIC GOES HERE
         # -----------------------------------------
-
-        result = {
-            "url": url,
-            "status": "scanned",
-            "message": "URL scan completed successfully"
-        }
-
+        result = quantum_scan(parsed_url.netloc)
         return result
 
     except HTTPException:

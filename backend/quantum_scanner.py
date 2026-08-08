@@ -6,7 +6,7 @@ PQC Track | NIST 2024 Post-Quantum Readiness Audit
 import ssl
 import socket
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 # ── NIST PQC Threat Matrix ─────────────────────────────────────────────────
@@ -32,6 +32,8 @@ VULNERABLE_ALGORITHMS = {
     "aes128":               {"risk": "MEDIUM", "reason": "Grover's algorithm halves effective key length to 64-bit. Upgrade to AES-256."},
     "des":                  {"risk": "CRITICAL", "reason": "Already classically broken. Completely obsolete."},
     "3des":                 {"risk": "HIGH",    "reason": "Deprecated. Grover reduces security further."},
+    "tls_aes_128_gcm_sha256": {"risk": "MEDIUM", "reason": "AES-128: Grover's algorithm halves effective key length to 64-bit. Upgrade to AES-256."},
+    "tls_aes_256_gcm_sha384": {"risk": "SAFE",   "reason": "AES-256 remains quantum-safe. Grover's reduces to 128-bit effective — still acceptable."},
 }
 
 SAFE_ALGORITHMS = {
@@ -95,45 +97,55 @@ def fetch_certificate(hostname: str, port: int = 443, timeout: int = 10) -> dict
 
 
 def parse_cert_algorithms(raw: dict) -> dict:
-    """
-    Pull public-key algorithm, signature algorithm, key size,
-    subject, issuer, and validity from the cert dict.
-    """
-    cert = raw["cert_dict"]
+    from cryptography import x509
+    from cryptography.hazmat.backends import default_backend
 
-    # ssl module returns these under these keys
-    subject  = dict(x[0] for x in cert.get("subject",  []))
-    issuer   = dict(x[0] for x in cert.get("issuer",   []))
+    cert = x509.load_der_x509_certificate(raw["cert_der"], default_backend())
 
-    not_before = cert.get("notBefore", "")
-    not_after  = cert.get("notAfter",  "")
+    pub_key_algo = cert.public_key().__class__.__name__
+    # Normalise to our threat matrix keys
+    if "EC" in pub_key_algo or "Elliptic" in pub_key_algo:
+        pub_key_algo = "id-ecPublicKey"
+    elif "RSA" in pub_key_algo:
+        pub_key_algo = "rsaEncryption"
 
-    # Key algorithm lives inside subjectPublicKeyInfo — ssl exposes it
-    # as a top-level key only in newer Python; fall back gracefully
-    pub_key_algo = (
-        cert.get("subjectPublicKeyInfo", {}).get("algorithm", {}).get("algorithm", "")
-        or "id-ecPublicKey"          # most sites are EC; safe default for demo
-    )
-
-    sig_algo = cert.get("signatureAlgorithm", {})
-    if isinstance(sig_algo, dict):
-        sig_algo_name = sig_algo.get("algorithm", cert.get("signatureAlgorithm", "unknown"))
+    sig_algo = cert.signature_algorithm_oid.dotted_string
+    sig_algo_name = cert.signature_hash_algorithm.name if cert.signature_hash_algorithm else "unknown"
+    # Map to our threat matrix keys
+    full_sig = f"{pub_key_algo}+{sig_algo_name}"
+    if "EC" in pub_key_algo:
+        sig_algo_display = f"ecdsa-with-SHA{sig_algo_name.replace('sha', '').upper()}"
+    elif "RSA" in pub_key_algo:
+        sig_algo_display = f"sha{sig_algo_name.replace('sha', '').upper()}WithRSAEncryption"
     else:
-        sig_algo_name = str(sig_algo)
+        sig_algo_display = sig_algo_name
+
+    try:
+        issuer_cn = cert.issuer.get_attributes_for_oid(
+            x509.oid.NameOID.ORGANIZATION_NAME
+        )[0].value
+    except (IndexError, Exception):
+        try:
+            issuer_cn = cert.issuer.get_attributes_for_oid(
+                x509.oid.NameOID.COMMON_NAME
+            )[0].value
+        except Exception:
+            issuer_cn = "Unknown CA"
+
+    not_after = cert.not_valid_after_utc.strftime("%b %d %H:%M:%S %Y GMT")
 
     return {
         "hostname":      raw["hostname"],
-        "subject_cn":    subject.get("commonName", raw["hostname"]),
-        "issuer_cn":     issuer.get("organizationName", issuer.get("commonName", "Unknown CA")),
-        "not_before":    not_before,
+        "subject_cn":    cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)[0].value,
+        "issuer_cn":     issuer_cn,
+        "not_before":    cert.not_valid_before_utc.strftime("%b %d %H:%M:%S %Y GMT"),
         "not_after":     not_after,
         "pub_key_algo":  pub_key_algo,
-        "sig_algo":      sig_algo_name,
+        "sig_algo":      sig_algo_display,
         "cipher_suite":  raw["cipher_suite"],
         "tls_version":   raw["tls_version"],
         "cipher_bits":   raw["cipher_bits"],
     }
-
 
 # ── Vulnerability Evaluation ───────────────────────────────────────────────
 
@@ -207,7 +219,7 @@ def evaluate_quantum_risk(parsed: dict) -> dict:
         "risk_score":    risk_score,
         "findings":      findings,
         "remediation":   remediation,
-        "scanned_at":    datetime.utcnow().isoformat() + "Z",
+        "scanned_at":    datetime.now(timezone.utc).isoformat(),
     }
 
 
