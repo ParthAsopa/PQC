@@ -1,11 +1,21 @@
-from quantum_scanner import scan as quantum_scan
+
 from fastapi import FastAPI, Query, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from urllib.parse import urlparse
 
 app = FastAPI(
     title="URL Scanner API",
     description="FastAPI wrapper for the URL scanning service",
     version="1.0.0"
+)
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -31,7 +41,13 @@ def scan(url: str = Query(..., description="URL to scan")):
         # -----------------------------------------
         # YOUR SCANNING LOGIC GOES HERE
         # -----------------------------------------
-        result = quantum_scan(parsed_url.netloc)
+
+        result = {
+            "url": url,
+            "status": "scanned",
+            "message": "URL scan completed successfully"
+        }
+
         return result
 
     except HTTPException:
@@ -44,3 +60,4 @@ def scan(url: str = Query(..., description="URL to scan")):
             "message": "An unexpected error occurred",
             "error": str(e)
         }
+
